@@ -15,16 +15,17 @@ class Graph {
   }
 
   #tooCloseToNode(x, y) {
+    console.log(this.#nodes);
     for (let node of this.#nodes) {
       console.log(squareDistance(x, y, node.x, node.y));
       if (squareDistance(x, y, node.x, node.y) < nodeDiameter * nodeDiameter) {
         return true;
       }
-      return false;
     }
+    return false;
   }
 
-  drawNodes() {
+  #drawNodes() {
     for (let node of this.#nodes) {
       if (node.selected) {
         push();
@@ -35,13 +36,62 @@ class Graph {
     }
   }
 
-  onClick(x, y) {
-    if (!this.#selectedNode) this.addNode(x, y);
+  #drawEdges() {
+    for (let node of this.#nodes) {
+      if(node.neighbours.length > 0) {
+        for(let nodeId of node.neighbours) {
+          const otherNode = this.#nodes[nodeId - 1];
+          line(node.x, node.y, otherNode.x, otherNode.y);
+        }
+      }
+    }
   }
 
-  drawEdges() {}
+  #unselect(x, y) {
+    const otherNode = this.#insideNode(x, y);
+    if (otherNode.id === this.#selectedNode) {
+      this.#selectedNode = 0;
+      otherNode.selected = false;
+      return true;
+    }
+    return false;
+  }
 
-  addNode(x, y) {
+  onClick(x, y) {
+    // no node selected -> nothing happens
+    if (!this.#selectedNode) return this.#addNode(x, y);
+
+    // unselecting current node -> disable node
+    if (this.#unselect(x, y)) return;
+
+    // selecting new node -> add edge
+    if (this.#addEdge(x, y)) return;
+
+    // deselect and add node normally
+    this.#nodes[this.#selectedNode - 1].selected = false;
+    this.#selectedNode = 0;
+    this.#addNode(x, y);
+  }
+
+  draw(){
+    this.#drawNodes();
+    this.#drawEdges();
+  }
+
+  #addEdge(x, y) {
+    const otherNode = this.#insideNode(x, y);
+    if (otherNode) {
+      const currentNode = this.#nodes[this.#selectedNode - 1];
+      otherNode.neighbours.push(currentNode.id);
+      currentNode.neighbours.push(otherNode.id);
+      currentNode.selected = false;
+      this.#selectedNode = 0;
+      return true;
+    }
+    return false;
+  }
+
+  #addNode(x, y) {
     // check if it's inside another node
     const insideNode = this.#insideNode(x, y);
     if (insideNode) {
@@ -50,8 +100,10 @@ class Graph {
       return;
     }
 
+    //check if too close to node
     if (this.#tooCloseToNode(x, y)) return;
 
+    // add node
     let newNode = new Node(x, y, this.#currentId);
     this.#nodes.push(newNode);
     this.#currentId++;
