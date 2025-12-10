@@ -2,7 +2,7 @@
 
 class Graph {
   nodes = [];
-  #currentId = 0;
+  #currentId = -1;
 
   // public functions
 
@@ -15,6 +15,26 @@ class Graph {
 
     // if out of bounds, return
     if(this.#outOfBOunds(x, y) || this.#nearBorder(x, y)) return;
+
+    if(this.#currentId != -1) {
+
+      // this.#currentId contains the previously selected node
+      // insideNode contains the newly selected nod
+      const insideNodeId = this.nodes.indexOf(insideNode);
+      this.#addEdge(this.#currentId, insideNodeId)
+      return;
+    }
+
+
+    // if coordinates are inside an existing node
+    let insideNode = this.#insideNode(x,y);
+    
+    if(insideNode) {
+      let selectedIndex = this.nodes.indexOf(insideNode);
+      this.nodes[selectedIndex].selected = true;
+      this.#currentId = selectedIndex;
+      return;
+    }
     
     this.nodes.push({x, y})
   }
@@ -66,6 +86,13 @@ class Graph {
    * @return {boolean}
    */
   #insideNode(x, y) {
+
+  let radius = nodeDiameter / 2;
+
+    for (let node of this.nodes) {
+      if(squareDistance(x,y,node.x,node.y) < radius ** 2) return node;
+    }
+    return false;
   }
 
 
@@ -83,7 +110,11 @@ class Graph {
    */
   #drawNodes() {
     for (let node of this.nodes) {
-      fill(0,0,255)
+      fill(0,0,255);
+
+      if(node.selected) {
+        fill(0,255,0);
+      }
       circle(node.x, node.y, nodeDiameter)
     }
   }
@@ -92,19 +123,25 @@ class Graph {
    * draw all edges on canvas
    */
   #drawEdges() {
-    
+    for(let node of this.nodes) {
+      if(node.neighbour) {
+        let neighbourNode = this.nodes[node.neigbour];
+        line(node.x,node.y,neighbourNode.x,neighbourNode.y)
+      }
+    }
   }
 
   // =================== INTERACTIVE ELEMENTS ===================
 
   
   /**
-   * Add new edge from selected node to node at (x, y)
-   * @param {*} x 
-   * @param {*} y 
+   * Add new edge from selected node at positions one and two
+   * @param {*} nodeOnePosition
+   * @param {*} nodeTwoPosition
    */
-  #addEdge(x, y) {
-    
+  #addEdge(nodeOnePosition, nodeTwoPosition) {
+    this.nodes[nodeOnePosition].neighbour = nodeTwoPosition;
+    this.nodes[nodeTwoPosition].neighbour = nodeOnePosition;
   }
 
   /**
