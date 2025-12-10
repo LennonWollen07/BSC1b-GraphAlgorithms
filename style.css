@@ -40,7 +40,9 @@ button:active{
   left: 0px; 
 }
 
-canvas {
-  position: absolute;
+main {
+  position: relative;
   top: 50px;
+  display: flex;
+  justify-content: center;
 }

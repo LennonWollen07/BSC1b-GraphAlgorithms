@@ -5,7 +5,7 @@
 
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 700);
 
   // Create a button and place it beneath the canvas.
   let button = createButton('click me');
