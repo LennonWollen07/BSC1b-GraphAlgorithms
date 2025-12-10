@@ -12,6 +12,11 @@ class Graph {
    * @param {Number} y 
    */
   onClick(x, y) {
+
+    // if out of bounds, return
+    if(this.#outOfBOunds(x, y) || this.#nearBorder(x, y)) return;
+    
+    this.nodes.push({x, y})
   }
 
   /**
@@ -30,8 +35,29 @@ class Graph {
    * @return {boolean}
    */
   #outOfBOunds(x, y) {
+    let outisde = false;
+    if(x<0 || x>width || y<0 || y>height) outisde = true;
   }
 
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @return {boolean}
+   */
+  #nearBorder(x, y) {
+    let radius = nodeDiameter / 2;
+
+    // distance to each border
+    let distance = {left: x, top: y, right: width - x, bottom: height - y}
+
+    // check if any of the border distances are smaller than radius
+    let near = false
+    if(distance.left <= radius || distance.top <= radius || 
+       distance.right <= radius || distance.top <= radius) near = true
+
+      return near;
+
+  }
 
   /**
    * Check if (x, y) is inside another node
@@ -56,6 +82,10 @@ class Graph {
    * draw all nodes that in canvas
    */
   #drawNodes() {
+    for (let node of this.nodes) {
+      fill(0,0,255)
+      circle(node.x, node.y, nodeDiameter)
+    }
   }
 
   /**
